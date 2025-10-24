@@ -23,7 +23,36 @@ spec:
           mountPath: /data/db
       volumes:
       - name: mongo-storage
-        emptyDir: {}  # for testing; replace with PersistentVolumeClaim for production
+        persistentVolumeClaim:
+          claimName: mongo-pvc  # Persistent storage for data
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-pv
+  namespace: auth-service-app
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/mongo   # For testing only; use cloud storage in production
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: auth-service-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
 ---
 apiVersion: v1
 kind: Service
