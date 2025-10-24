@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: auth-service-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth-service
+        image: 707656702919.dkr.ecr.ap-south-1.amazonaws.com/auth-service:latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: PORT
+          value: "4000"
+        - name: MONGO_URI
+          value: "mongodb://mongo:27017/authdb"
+        - name: REDIS_URL
+          value: "redis://redis:6379"
+        - name: RABBITMQ_URL
+          value: "amqp://rabbitmq"
+        - name: JWT_SECRET
+          value: "mysecretkey"
+        - name: JWT_EXPIRY
+          value: "1h"
+        - name: NODE_ENV
+          value: "development"
+      imagePullSecrets:
+      - name: ecr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: auth-service-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: auth-service
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
+
